@@ -51,8 +51,23 @@ while True:
     
     mask = cv2.inRange(hsv, lower,upper)
     mask = 255-mask
+    mask_erode = cv2.erode(mask, cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3)))
     
-    cv2.imshow('Video', mask)
+    #calculando el centro de masa
+    Y, X = np.indices(mask_erode.shape) # la primera matriz contiene los indices de fila y la segunda la de las columnas
+    
+    M = np.sum(mask_erode) # la masa seria la suma de todos los valores de intensidad en la region del objeto
+                           # como el fondo es = 0, entonces podemos tomarlo, pues su valor no aporta nada
+    sum_x = np.sum(X*mask_erode) #la sumatoria de la coordenada en x * la intensidad en ese pixel
+    sum_y = np.sum(Y*mask_erode) #la sumatoria de la coordenada en y * la intensidad en ese pixel
+    
+    xc = 1/M * sum_x # Xc = la suma de las x dividido la masa
+    yc = 1/M * sum_y # Yc = la suma de las y dividido la masa
+    
+    print(f"Coordenadas del centro de masa ({xc:.2f}, {yc:.2f})")
+    print()
+    #cv2.imshow('Video', mask)
+    cv2.imshow('Video', mask_erode)
     
     key = cv2.waitKey(30) & 0xFF
     if key == 27:  # Presiona la tecla 'Esc' para salir
