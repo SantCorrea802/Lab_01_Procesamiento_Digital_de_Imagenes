@@ -39,19 +39,13 @@ while True:
         frame2 = np.copy(frame)
         if not ret:
             break
-    if mostrar_pixel:
-        pixel_color = frame[y, x]  # Obtener el valor del color en (x, y)
-        frame2 = np.copy(frame)
-        cv2.putText(frame2, f'Posicion: ({x}, {y}) Color: {pixel_color}', (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
         
-    frame3 = cv2.resize(frame2, (nuevo_ancho,nuevo_alto))
-    hsv = cv2.cvtColor(frame3, cv2.COLOR_BGR2HSV)
-
-    
-    mask = cv2.inRange(hsv, lower,upper)
+    frame_alt = cv2.resize(np.copy(frame2), (nuevo_ancho, nuevo_alto))
+    hsv = cv2.cvtColor(frame_alt, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, lower, upper)
     mask = 255-mask
-    mask_erode = cv2.erode(mask, cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3)))
+    mask_erode = cv2.erode(mask, cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3)))  
+    
     
     #calculando el centro de masa
     Y, X = np.indices(mask_erode.shape) # la primera matriz contiene los indices de fila y la segunda la de las columnas
@@ -66,8 +60,16 @@ while True:
     
     print(f"Coordenadas del centro de masa ({xc:.2f}, {yc:.2f})")
     print()
-    #cv2.imshow('Video', mask)
-    cv2.imshow('Video', mask_erode)
+    
+    # Mostrar texto del color del pixel (sin alterar la imagen usada para cálculo)
+    if mostrar_pixel:
+        pix_col = mask_erode[y, x]  # Ahora tomamos la intensidad del píxel en la máscara erosionada (0 o 255)
+        mask_vis = cv2.cvtColor(mask_erode, cv2.COLOR_GRAY2BGR)
+        cv2.putText(mask_vis, f'Posicion: ({x}, {y}) Intensidad: {pix_col}', (10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        cv2.imshow('Video', mask_vis)
+    else:
+        cv2.imshow('Video', mask_erode)
     
     key = cv2.waitKey(30) & 0xFF
     if key == 27:  # Presiona la tecla 'Esc' para salir
