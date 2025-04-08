@@ -61,17 +61,17 @@ while True:
     print(f"Coordenadas del centro de masa ({xc:.2f}, {yc:.2f})")
     print()
     
-    # Mostrar texto del color del pixel (sin alterar la imagen usada para cálculo)
+    # mostrar texto del color del pixel sin alterar la imagen usada para el calculo del centro de masa
     if mostrar_pixel:
-        pix_col = mask_erode[y, x]  # Ahora tomamos la intensidad del píxel en la máscara erosionada (0 o 255)
-        mask_vis = cv2.cvtColor(mask_erode, cv2.COLOR_GRAY2BGR)
+        pix_col = mask_erode[y, x]  
+        mask_vis = cv2.cvtColor(mask_erode, cv2.COLOR_GRAY2BGR) # para que se pueda mostrar el texto (3 canales)
         cv2.putText(mask_vis, f'Posicion: ({x}, {y}) Intensidad: {pix_col}', (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         cv2.imshow('Video', mask_vis)
     else:
         cv2.imshow('Video', mask_erode)
     
-    key = cv2.waitKey(30) & 0xFF
+    key = cv2.waitKey(33) & 0xFF
     if key == 27:  # Presiona la tecla 'Esc' para salir
         break
     
