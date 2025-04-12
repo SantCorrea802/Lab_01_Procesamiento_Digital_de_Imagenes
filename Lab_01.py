@@ -17,7 +17,8 @@ def mouse_callback(event, _x, _y, flags, param):
         pausar_video = not pausar_video
         
 # Cargar el video
-video_path = 'Lab_01\\video_pendulo.mp4'  # Cambia esto al camino de tu video
+video_path = 'video_2.mp4'
+#video_path = 'Lab_01\\video_pendulo.mp4'  # Cambia esto al camino de tu video
 cap = cv2.VideoCapture(video_path)
 
 # Crear una ventana y configurar la función de callback de mouse
@@ -26,8 +27,11 @@ cv2.setMouseCallback('Video', mouse_callback)
 
 nuevo_alto = 480
 nuevo_ancho = 680
-lower = np.array([107,0,0])
-upper = np.array([128,255,255])
+#este primero es para el video pequeño
+lower = np.array([0,69,0])
+upper = np.array([138,255,255])
+#lower = np.array([107,0,0])
+#upper = np.array([128,255,255])
 #lower = np.array([107,0,0])
 #upper = np.array([128,255,239])
 
@@ -130,9 +134,9 @@ while True:
         
         cv2.putText(mask_vis, f"Centro de masa: ({xc:.0f}, {yc:.0f})", (10,350), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
         # dibujar el vector
-        cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+100*mv[-1]*dvx[-1]),int(yc+100*mv[-1]*dvy[-1])), (255,0,0), thickness=2)
+        cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+150*mv[-1]*dvx[-1]),int(yc+150*mv[-1]*dvy[-1])), (255,0,0), thickness=2)
         cv2.putText(mask_vis, f"Vx = {vx[-1]:.2f}, Vy = {vy[-1]:.2f} Magnitud velocidad: {mv[-1]:.2f}", (10,450), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
-        cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+20*ma[-1]*dax[-1]),int(yc+20*ma[-1]*day[-1])), (0, 255,0), thickness=2)
+        cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+50*ma[-1]*dax[-1]),int(yc+50*ma[-1]*day[-1])), (0, 0,151), thickness=2,line_type=8)
         cv2.putText(mask_vis, f"ax = {ax[-1]:.2f}, ay = {ay[-1]:.2f} Magnitud aceleracion: {ma[-1]:.2f}", (10,400), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
         cv2.imshow('Video', mask_vis)
     else:
@@ -146,9 +150,9 @@ while True:
         # que serian la velocidad y aceleracion respectivamente y asi poder mostrar sus magnitudes
         
         if len(centros_x) >= 2 and len(centros_y) >= 3:
-            cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+100*mv[-1]*dvx[-1]),int(yc+100*mv[-1]*dvy[-1])), (255,0,0), thickness=2)
+            cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+150*mv[-1]*dvx[-1]),int(yc+150*mv[-1]*dvy[-1])), (255,0,0), thickness=2)
             cv2.putText(mask_vis, f"Vx = {vx[-1]:.2f}, Vy = {vy[-1]:.2f} Magnitud velocidad: {mv[-1]:.2f}", (10,450), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
-            cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+20*ma[-1]*dax[-1]),int(yc+20*ma[-1]*day[-1])), (0, 255,0), thickness=2)
+            cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+50*ma[-1]*dax[-1]),int(yc+50*ma[-1]*day[-1])), (0, 0,151), thickness=2,line_type=8)
             cv2.putText(mask_vis, f"ax = {ax[-1]:.2f}, ay = {ay[-1]:.2f} Magnitud aceleracion: {ma[-1]:.2f}", (10,400), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
         cv2.imshow('Video', mask_vis)
     
