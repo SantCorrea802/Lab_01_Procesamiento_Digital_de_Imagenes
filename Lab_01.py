@@ -7,6 +7,10 @@ import math
 pausar_video = False
 mostrar_pixel = False
 
+señal = 3 # para utilizarla en la convolucion como kernel o delta(n-k)
+
+vel_tang = []
+ace_tang = []
 # Función de callback de mouse
 def mouse_callback(event, _x, _y, flags, param):
     global pausar_video, mostrar_pixel, x, y
@@ -82,20 +86,46 @@ while True:
             
             vx = np.gradient(centros_x, delta_t) # velocidad de x es la derivada de la posicion respecto al tiempo
             vy = np.gradient(centros_y, delta_t) # velocidad de y es la derivada de la posicion respecto al tiempo
-            ax = np.gradient(vx, delta_t) # acelereacion en x
-            ay = np.gradient(vy, delta_t) # aceleracion en y
+            
+            kernel = np.ones(señal)/señal # esta sera la señal para usar en la convolucion
+            
+            # usamos la convolucion para suavizar las velocidades y eliminar ruido
+            vx_suavizado = np.convolve(vx, kernel, mode="same")
+            vy_suavizado = np.convolve(vy, kernel, mode="same")
+            
+            # hallamos las aceleraciones
+            ax = np.gradient(vx_suavizado, delta_t) # acelereacion en x
+            ay = np.gradient(vy_suavizado, delta_t) # aceleracion en y
+            
+            
+            # suavizamos las aceleraciones
+            ax_suavizado = np.convolve(ax, kernel, mode="same")
+            ay_suavizado = np.convolve(ay, kernel, mode="same")
+            
+            
             
             # Actualmente estamos en unidades de px/s y px/s^2
             # Por lo que ahora haremos la conversion de px/s y px/s^2 a m/s y m/s^2
             # hallando la relacion, 1 px = 3.629e-4
             
-            vx = vx*3.629e-4 
-            vy = vy*3.629e-4
-            ax = ax*3.629e-4
-            ay = ay*3.629e-4
-                        
-            mv = np.sqrt(vx**2 + vy**2) # magnitud de la velocidad
-            ma = np.sqrt(ax**2 + ay**2) # magnitud de la aceleracion
+            vx_suavizado *= 3.629e-4 
+            vy_suavizado *= 3.629e-4
+            ax_suavizado *= 3.629e-4
+            ay_suavizado *= 3.629e-4
+            
+
+            mv = np.sqrt(vx_suavizado**2 + vy_suavizado**2) # magnitud de la velocidad
+            ma = np.sqrt(ax_suavizado**2 + ay_suavizado**2) # magnitud de la aceleracion
+            
+            # ahora calculamos la aceleracion y velocidades tangenciales
+            
+            vt = mv*np.sign(vx_suavizado)#velocidad tangencial = magnitud de velocidad * signo de la velocidad en x
+            at = ma*np.sign(ax_suavizado)
+            
+            # guardamos las velocidades y aceleraciones tangenciales para poder graficarlas
+            vel_tang.append(vt[-1])
+            ace_tang.append(at[-1])
+
             
             print(f"La velocidad de x en el tiempo {i*delta_t:.2f} segundos es de {vx[-1]:.2f} m/s")
             # debe ser vx[-1] ya que debemos hallar la velocidad en ese ultimo punto que acabamos
@@ -113,12 +143,12 @@ while True:
             print()
     
             # para dibujar el vector de la velocidad
-            theta_v = np.arctan2(vy, vx) # calcula theta = la tangente inversa de la velocidad en x sobre la velocidad en y
+            theta_v = np.arctan2(vy_suavizado, vx_suavizado) # calcula theta = la tangente inversa de la velocidad en x sobre la velocidad en y
             dvx = np.cos(theta_v) # encontramos el desplazamiento del vector de velocidad en x
             dvy = np.sin(theta_v) # encontramos el desplazamiento del vector de velocidad en y
             
             # para dibujar el vector de la aceleracion
-            theta_a = np.arctan2(ay, ax) # calcula theta = la tangente inversa de la velocidad en x sobre la velocidad en y
+            theta_a = np.arctan2(ay_suavizado, ax_suavizado) # calcula theta = la tangente inversa de la velocidad en x sobre la velocidad en y
             dax = np.cos(theta_a) # encontramos el desplazamiento del vector de aceleracion en x
             day = np.sin(theta_a) # encontramos el desplazamiento del vector de aceleracion en y
             
@@ -134,10 +164,10 @@ while True:
         
         cv2.putText(mask_vis, f"Centro de masa: ({xc:.0f}, {yc:.0f})", (10,350), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
         # dibujar el vector
-        cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+150*mv[-1]*dvx[-1]),int(yc+150*mv[-1]*dvy[-1])), (255,0,0), thickness=2)
-        cv2.putText(mask_vis, f"Vx = {vx[-1]:.2f}, Vy = {vy[-1]:.2f} Magnitud velocidad: {mv[-1]:.2f}", (10,450), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
-        cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+50*ma[-1]*dax[-1]),int(yc+50*ma[-1]*day[-1])), (0, 0,151), thickness=2,line_type=8)
-        cv2.putText(mask_vis, f"ax = {ax[-1]:.2f}, ay = {ay[-1]:.2f} Magnitud aceleracion: {ma[-1]:.2f}", (10,400), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
+        cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+200*mv[-1]*dvx[-1]),int(yc+200*mv[-1]*dvy[-1])), (255,0,0), thickness=2,line_type=8)
+        cv2.putText(mask_vis, f"Velocidad tangencial {vt[-1]:.2f} m/s", (10,400), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
+        cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+35*ma[-1]*dax[-1]),int(yc+35*ma[-1]*day[-1])), (0, 0,151), thickness=2,line_type=8)
+        cv2.putText(mask_vis, f"Aceleracion tangencial {at[-1]:.2f} m/s^2", (10,450), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
         cv2.imshow('Video', mask_vis)
     else:
         mask_vis = cv2.cvtColor(mask_erode, cv2.COLOR_GRAY2BGR) # para que se pueda mostrar el texto (3 canales)
@@ -150,10 +180,11 @@ while True:
         # que serian la velocidad y aceleracion respectivamente y asi poder mostrar sus magnitudes
         
         if len(centros_x) >= 2 and len(centros_y) >= 3:
-            cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+150*mv[-1]*dvx[-1]),int(yc+150*mv[-1]*dvy[-1])), (255,0,0), thickness=2)
-            cv2.putText(mask_vis, f"Vx = {vx[-1]:.2f}, Vy = {vy[-1]:.2f} Magnitud velocidad: {mv[-1]:.2f}", (10,450), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
-            cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+50*ma[-1]*dax[-1]),int(yc+50*ma[-1]*day[-1])), (0, 0,151), thickness=2,line_type=8)
-            cv2.putText(mask_vis, f"ax = {ax[-1]:.2f}, ay = {ay[-1]:.2f} Magnitud aceleracion: {ma[-1]:.2f}", (10,400), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
+            
+            cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+200*mv[-1]*dvx[-1]),int(yc+200*mv[-1]*dvy[-1])), (255,0,0), thickness=2,line_type=8)
+            cv2.putText(mask_vis, f"Velocidad tangencial {vt[-1]:.2f} m/s", (10,400), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
+            cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+35*ma[-1]*dax[-1]),int(yc+35*ma[-1]*day[-1])), (0, 0,151), thickness=2,line_type=8)
+            cv2.putText(mask_vis, f"Aceleracion tangencial {at[-1]:.2f} m/s^2", (10,450), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
         cv2.imshow('Video', mask_vis)
     
     
