@@ -45,7 +45,7 @@ def mouse_callback(event, _x, _y, flags, param):
         pausar_video = not pausar_video
         
 # Cargar el video
-video_path = 'video_2.mp4'
+video_path = 'Lab_01//video_pendulo.mp4'
 cap = cv2.VideoCapture(video_path)
 
 #crear una ventana y configurar la función de callback de mouse
@@ -53,8 +53,8 @@ cv2.namedWindow('Video')
 cv2.setMouseCallback('Video', mouse_callback)
 nuevo_alto = 480
 nuevo_ancho = 680
-lower = np.array([0,69,0])
-upper = np.array([138,255,255])
+lower = np.array([80,64,0])
+upper = np.array([116,255,255])
 delta_t = 1/cap.get(cv2.CAP_PROP_FPS)
 centros_x = []
 centros_y = []
@@ -111,11 +111,11 @@ while True:
 
             # Actualmente estamos en unidades de px/s y px/s^2
             # Por lo que ahora haremos la conversion de px/s y px/s^2 a m/s y m/s^2
-            # hallando la relacion, 1 px = 3.629e-4
-            vx_suavizado *= 5.934e-4#8.629e-4 
-            vy_suavizado *= 5.934e-4#8.629e-4
-            ax_suavizado *= 5.934e-4#8.629e-4
-            ay_suavizado *= 5.934e-4#8.629e-4
+            # hallando la relacion, 1 px = 6.7710e-4 metros
+            vx_suavizado *= 6.7710e-4
+            vy_suavizado *= 6.7710e-4
+            ax_suavizado *= 6.7710e-4
+            ay_suavizado *= 6.7710e-4
             mv = np.sqrt(vx_suavizado**2 + vy_suavizado**2) # magnitud de la velocidad
             ma = np.sqrt(ax_suavizado**2 + ay_suavizado**2) # magnitud de la aceleracion
             
@@ -150,15 +150,15 @@ while True:
             fig.canvas.draw_idle() # actualizamos la pantalla
             plt.pause(0.00001)
             
-            print(f"La velocidad de x en el tiempo {t_actual:.2f} segundos es de {vx[-1]:.2f} m/s")
+            print(f"La velocidad de x en el tiempo {t_actual:.2f} segundos es de {vx_suavizado[-1]:.2f} m/s")
             # debe ser vx[-1] ya que debemos hallar la velocidad en ese ultimo punto que acabamos
             # de agregar al vector de centros
             print()
-            print(f"La velocidad de y en el tiempo {t_actual:.2f} segundos es de {vy[-1]:.2f} m/s")
+            print(f"La velocidad de y en el tiempo {t_actual:.2f} segundos es de {vy_suavizado[-1]:.2f} m/s")
             print()
-            print(f"La aceleracion de x en el tiempo {t_actual:.2f} segundos es de {ax[-1]:.2f} m/s^2")
+            print(f"La aceleracion de x en el tiempo {t_actual:.2f} segundos es de {ax_suavizado[-1]:.2f} m/s^2")
             print()
-            print(f"La aceleracion de y en el tiempo {t_actual:.2f} segundos es de {ay[-1]:.2f} m/s^2")
+            print(f"La aceleracion de y en el tiempo {t_actual:.2f} segundos es de {ay_suavizado[-1]:.2f} m/s^2")
             print()
             print(f"La magnitud de la velocidad en el tiempo {t_actual:.2f} segundos es de {mv[-1]:.2f}")
             print()
