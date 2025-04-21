@@ -28,6 +28,10 @@ ax2.legend()
 pausar_video = False
 mostrar_pixel = False
 
+L = 0.265
+px_m =  6.7710e-4
+x0 = 381
+
 señal = 3 # para utilizarla en la convolucion como kernel o delta(n-k)
 
 # Función de callback de mouse
@@ -105,16 +109,16 @@ while True:
             # Actualmente estamos en unidades de px/s y px/s^2
             # Por lo que ahora haremos la conversion de px/s y px/s^2 a m/s y m/s^2
             # hallando la relacion, 1 px = 6.7710e-4 metros
-            vx_suavizado *= 6.7710e-4
-            vy_suavizado *= 6.7710e-4
-            ax_suavizado *= 6.7710e-4
-            ay_suavizado *= 6.7710e-4
+            vx_suavizado *= px_m
+            vy_suavizado *= px_m
+            ax_suavizado *= px_m
+            ay_suavizado *= px_m
             mv = np.sqrt(vx_suavizado**2 + vy_suavizado**2) # magnitud de la velocidad
             ma = np.sqrt(ax_suavizado**2 + ay_suavizado**2) # magnitud de la aceleracion
             # ahora calculamos la aceleracion y velocidades tangenciales
             vt = mv*np.sign(vx_suavizado)
             #velocidad tangencial = magnitud de velocidad * signo de la velocidad en x
-            at = ma*np.sign(ax_suavizado)
+            at = np.gradient(vt, delta_t)
             
             # guardamos las velocidades y aceleraciones tangenciales para poder graficarlas
             vel_tang.append(vt[-1])
@@ -140,6 +144,8 @@ while True:
             fig.canvas.draw_idle() # actualizamos la pantalla
             plt.pause(0.00001)
             
+            desp_x = (centros_x[-1]-x0) *px_m # para hallar el angulo de amplitud
+            angulo = np.arcsin(desp_x/L)
             print(f"La velocidad de x en el tiempo {t_actual:.2f} segundos es de {vx_suavizado[-1]:.2f} m/s")
             # debe ser vx[-1] ya que debemos hallar la velocidad en ese ultimo punto que acabamos
             # de agregar al vector de centros
@@ -155,6 +161,8 @@ while True:
             print(f"La magnitud de la aceleracion en el tiempo {t_actual:.2f} segundos es de {ma[-1]:.2f}")
             print()
             print(f"velocidad tangencial en el tiempo {t_actual:.2f} segundos es de {vt[-1]:.2f}")
+            print()
+            print(f"el angulo en el tiempo {t_actual:.2f} segundos es de {angulo:.2f}")
             print()
 
 
@@ -181,6 +189,7 @@ while True:
         cv2.putText(mask_vis, f"Velocidad tangencial {vt[-1]:.2f} m/s", (10,400), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
         cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+20*ma[-1]*dax[-1]),int(yc+20*ma[-1]*day[-1])), (0, 0,151), thickness=2,line_type=8)
         cv2.putText(mask_vis, f"Aceleracion tangencial {at[-1]:.2f} m/s^2", (10,450), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
+        cv2.putText(mask_vis,  f"Angulo {angulo:.2f} grados", (400,450), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
         cv2.imshow('Video', mask_vis)
     else:
         mask_vis = cv2.cvtColor(mask_erode, cv2.COLOR_GRAY2BGR) # para que se pueda mostrar el texto (3 canales)
@@ -195,6 +204,7 @@ while True:
             cv2.putText(mask_vis, f"Velocidad tangencial {vt[-1]:.2f} m/s", (10,400), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
             cv2.arrowedLine(mask_vis,(int(xc),int(yc)), (int(xc+20*ma[-1]*dax[-1]),int(yc+20*ma[-1]*day[-1])), (0, 0,151), thickness=2,line_type=8)
             cv2.putText(mask_vis, f"Aceleracion tangencial {at[-1]:.2f} m/s^2", (10,450), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
+            cv2.putText(mask_vis,  f"Angulo {angulo:.2f} grados", (400,450), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
         cv2.imshow('Video', mask_vis)
     
     key = cv2.waitKey(33) & 0xFF
