@@ -32,7 +32,7 @@ L = 0.265
 px_m =  6.7710e-4
 x0 = 381
 
-señal = 3 # para utilizarla en la convolucion como kernel o delta(n-k)
+señal = 2 # para utilizarla en la convolucion como kernel o delta(n-k)
 
 # Función de callback de mouse
 def mouse_callback(event, _x, _y, flags, param):
